@@ -1,116 +1,989 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>REIOX — نصنع المستقبل الرقمي</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #03050f;
+      --surface: #080d1e;
+      --cyan: #00f5e4;
+      --blue: #0066ff;
+      --purple: #6600ff;
+      --white: #e8f0ff;
+      --muted: #4a5580;
+      --glow-cyan: 0 0 30px rgba(0,245,228,0.4);
+      --glow-blue: 0 0 30px rgba(0,102,255,0.4);
+    }
 
-    
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reiox - Smart Web Tools</title>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #0f0f0f, #111827);
-    color: white;
-    text-align: center;
-}
+    html { scroll-behavior: smooth; }
 
-header {
-    padding: 60px 20px;
-}
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Cairo', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
 
-.logo {
-    font-size: 42px;
-    font-weight: bold;
-    color: #00f5ff;
-    text-shadow: 0 0 15px #00f5ff;
-}
+    /* Custom Cursor */
+    .cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      background: var(--cyan);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s ease, opacity 0.2s;
+      mix-blend-mode: screen;
+    }
+    .cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(0,245,228,0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.15s ease, width 0.2s, height 0.2s, opacity 0.2s;
+    }
 
-.tagline {
-    margin-top: 15px;
-    font-size: 18px;
-    color: #ccc;
-}
+    /* Canvas background */
+    #grid-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.35;
+    }
 
-.tools-container {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
-    padding: 50px 20px;
-}
+    /* Noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.6;
+    }
 
-.tool-card {
-    background: #1f2937;
-    border-radius: 20px;
-    padding: 40px 30px;
-    width: 260px;
-    transition: 0.3s ease;
-    box-shadow: 0 0 15px rgba(0,255,255,0.1);
-}
+    /* ─── NAV ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 1.2rem 5vw;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(to bottom, rgba(3,5,15,0.9), transparent);
+      backdrop-filter: blur(8px);
+    }
+    .logo {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 1.6rem;
+      letter-spacing: 0.2em;
+      color: var(--white);
+      text-decoration: none;
+      position: relative;
+    }
+    .logo span { color: var(--cyan); }
+    .logo::after {
+      content: '';
+      position: absolute;
+      bottom: -4px; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+    }
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      transition: color 0.3s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -3px; left: 0;
+      width: 0; height: 1px;
+      background: var(--cyan);
+      transition: width 0.3s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      padding: 0.55rem 1.5rem;
+      border: 1px solid var(--cyan);
+      color: var(--cyan) !important;
+      border-radius: 2px;
+      transition: background 0.3s, box-shadow 0.3s !important;
+    }
+    .nav-cta:hover {
+      background: rgba(0,245,228,0.08) !important;
+      box-shadow: var(--glow-cyan) !important;
+    }
+    .nav-cta::after { display: none !important; }
 
-.tool-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 0 25px rgba(0,255,255,0.4);
-}
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 4px;
+    }
+    .hamburger span {
+      display: block;
+      width: 24px; height: 1.5px;
+      background: var(--white);
+      transition: all 0.3s;
+    }
 
-.tool-card h3 {
-    margin-bottom: 20px;
-    color: #00f5ff;
-}
+    /* ─── HERO ─── */
+    #hero {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8rem 5vw 4rem;
+      text-align: center;
+      overflow: hidden;
+    }
 
-.tool-card a {
-    display: inline-block;
-    padding: 12px 25px;
-    border-radius: 30px;
-    background: #00f5ff;
-    color: black;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
-}
+    .hero-content { max-width: 850px; }
 
-.tool-card a:hover {
-    background: white;
-}
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(0,245,228,0.3);
+      background: rgba(0,245,228,0.05);
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.3s forwards;
+    }
+    .hero-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
 
-footer {
-    padding: 30px;
-    font-size: 14px;
-    color: #888;
-}
-</style>
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .hero-title {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: clamp(2.8rem, 8vw, 6.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.5s forwards;
+    }
+    .hero-title .line-1 { color: var(--white); display: block; }
+    .hero-title .line-2 {
+      display: block;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      color: #8899cc;
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 600px;
+      margin: 0 auto 3rem;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.7s forwards;
+    }
+
+    .hero-ctas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.2rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.9s 0.9s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2.2rem;
+      background: linear-gradient(135deg, var(--cyan), var(--blue));
+      color: #000;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+      transition: transform 0.2s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 40px rgba(0,245,228,0.5); }
+    .btn-primary:hover::before { opacity: 1; }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.9rem 2.2rem;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--white);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border-radius: 3px;
+      letter-spacing: 0.03em;
+      transition: border-color 0.3s, background 0.3s;
+    }
+    .btn-outline:hover {
+      border-color: rgba(0,245,228,0.4);
+      background: rgba(0,245,228,0.05);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      animation: fadeIn 1s 1.5s both;
+    }
+    .scroll-line {
+      width: 1px; height: 40px;
+      background: linear-gradient(to bottom, transparent, var(--cyan));
+      animation: scrollLine 2s ease-in-out infinite;
+    }
+    @keyframes scrollLine {
+      0%, 100% { transform: scaleY(0); transform-origin: top; }
+      50% { transform: scaleY(1); transform-origin: top; }
+    }
+
+    /* ─── STATS ─── */
+    #stats {
+      position: relative; z-index: 2;
+      padding: 4rem 5vw;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      background: rgba(8,13,30,0.6);
+    }
+    .stats-grid {
+      max-width: 1000px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      text-align: center;
+    }
+    .stat-item { opacity: 0; transform: translateY(20px); transition: all 0.6s; }
+    .stat-item.visible { opacity: 1; transform: translateY(0); }
+    .stat-number {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label { color: var(--muted); font-size: 0.85rem; margin-top: 0.3rem; }
+
+    /* ─── SERVICES ─── */
+    #services {
+      position: relative; z-index: 2;
+      padding: 8rem 5vw;
+    }
+    .section-header { text-align: center; margin-bottom: 5rem; }
+    .section-tag {
+      display: inline-block;
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+    .section-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+    .section-title em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .services-grid {
+      max-width: 1100px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .service-card {
+      background: var(--bg);
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s, transform 0.6s, background 0.3s;
+    }
+    .service-card.visible { opacity: 1; transform: translateY(0); }
+    .service-card:hover { background: var(--surface); }
+    .service-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .service-card:hover::before { opacity: 1; }
+
+    .service-icon {
+      width: 52px; height: 52px;
+      border: 1px solid rgba(0,245,228,0.2);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.5rem;
+      font-size: 1.4rem;
+      background: rgba(0,245,228,0.05);
+      transition: box-shadow 0.3s, border-color 0.3s;
+    }
+    .service-card:hover .service-icon {
+      box-shadow: var(--glow-cyan);
+      border-color: var(--cyan);
+    }
+    .service-card h3 {
+      font-family: 'Orbitron', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.8rem;
+      letter-spacing: 0.05em;
+    }
+    .service-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+
+    /* ─── WHY US ─── */
+    #why {
+      position: relative; z-index: 2;
+      padding: 8rem 5vw;
+      background: rgba(8,13,30,0.4);
+    }
+    .why-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+    .why-visual {
+      position: relative;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .why-rings {
+      position: relative;
+      width: 300px; height: 300px;
+    }
+    .ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 1px solid;
+      animation: rotate 10s linear infinite;
+    }
+    .ring:nth-child(1) {
+      border-color: rgba(0,245,228,0.3);
+      animation-duration: 12s;
+    }
+    .ring:nth-child(2) {
+      inset: 20px;
+      border-color: rgba(0,102,255,0.3);
+      animation-duration: 8s;
+      animation-direction: reverse;
+    }
+    .ring:nth-child(3) {
+      inset: 50px;
+      border-color: rgba(102,0,255,0.3);
+      animation-duration: 15s;
+    }
+    .ring::after {
+      content: '';
+      position: absolute;
+      top: 50%; left: -3px;
+      width: 6px; height: 6px;
+      background: var(--cyan);
+      border-radius: 50%;
+      transform: translateY(-50%);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+    .ring:nth-child(2)::after { background: var(--blue); box-shadow: 0 0 10px var(--blue); }
+    .ring:nth-child(3)::after { background: var(--purple); box-shadow: 0 0 10px var(--purple); }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .why-center {
+      position: absolute;
+      width: 100px; height: 100px;
+      background: radial-gradient(circle, rgba(0,245,228,0.15), rgba(8,13,30,0.8));
+      border-radius: 50%;
+      border: 1px solid rgba(0,245,228,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 0.9rem;
+      color: var(--cyan);
+      letter-spacing: 0.1em;
+    }
+
+    .why-features { display: flex; flex-direction: column; gap: 1.5rem; }
+    .why-feature {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.2rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 4px;
+      background: rgba(255,255,255,0.02);
+      transition: border-color 0.3s, background 0.3s;
+      opacity: 0;
+      transform: translateX(20px);
+      transition: opacity 0.6s, transform 0.6s, border-color 0.3s, background 0.3s;
+    }
+    .why-feature.visible { opacity: 1; transform: translateX(0); }
+    .why-feature:hover {
+      border-color: rgba(0,245,228,0.2);
+      background: rgba(0,245,228,0.03);
+    }
+    .feature-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text h4 {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--white);
+      margin-bottom: 0.3rem;
+    }
+    .feature-text p { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+    /* ─── PROCESS ─── */
+    #process {
+      position: relative; z-index: 2;
+      padding: 8rem 5vw;
+    }
+    .process-steps {
+      max-width: 900px; margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+      position: relative;
+    }
+    .process-steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 12.5%; right: 12.5%;
+      height: 1px;
+      background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple));
+    }
+    .step {
+      text-align: center;
+      padding: 0 1rem;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s, transform 0.5s;
+    }
+    .step.visible { opacity: 1; transform: translateY(0); }
+    .step-num {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--bg);
+      border: 1px solid var(--cyan);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 1rem;
+      color: var(--cyan);
+      box-shadow: var(--glow-cyan);
+      position: relative;
+      z-index: 1;
+    }
+    .step h4 {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--white);
+      margin-bottom: 0.5rem;
+    }
+    .step p { color: var(--muted); font-size: 0.8rem; line-height: 1.6; }
+
+    /* ─── CTA SECTION ─── */
+    #cta {
+      position: relative; z-index: 2;
+      padding: 10rem 5vw;
+      text-align: center;
+      overflow: hidden;
+    }
+    #cta::before {
+      content: '';
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,102,255,0.12), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-content { max-width: 700px; margin: 0 auto; }
+    .cta-title {
+      font-family: 'Orbitron', monospace;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 900;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+    }
+    .cta-title span {
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .cta-sub { color: var(--muted); font-size: 1.05rem; margin-bottom: 3rem; }
+
+    /* ─── FOOTER ─── */
+    footer {
+      position: relative; z-index: 2;
+      padding: 3rem 5vw;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      background: rgba(8,13,30,0.6);
+    }
+    .footer-logo {
+      font-family: 'Orbitron', monospace;
+      font-weight: 900;
+      font-size: 1.3rem;
+      color: var(--white);
+      letter-spacing: 0.2em;
+    }
+    .footer-logo span { color: var(--cyan); }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.3s;
+    }
+    .footer-links a:hover { color: var(--cyan); }
+    .footer-copy { color: var(--muted); font-size: 0.8rem; }
+    .footer-copy span { color: var(--cyan); }
+
+    /* ─── ANIMATIONS ─── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* ─── MOBILE NAV ─── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; flex-direction: column; position: fixed; top: 0; right: 0; bottom: 0; width: 70vw; max-width: 300px; background: rgba(8,13,30,0.97); padding: 6rem 2rem 2rem; gap: 1.5rem; z-index: 99; transform: translateX(100%); transition: transform 0.3s; }
+      .nav-links.open { display: flex; transform: translateX(0); }
+      .hamburger { display: flex; z-index: 101; }
+
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .services-grid { grid-template-columns: 1fr; }
+      .why-inner { grid-template-columns: 1fr; gap: 4rem; }
+      .why-visual { display: none; }
+      .process-steps { grid-template-columns: repeat(2, 1fr); }
+      .process-steps::before { display: none; }
+    }
+  </style>
 </head>
-
 <body>
 
-<header>
-    <div class="logo">Reiox</div>
-    <div class="tagline">Fast & Smart Online Tools</div>
-</header>
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
 
-<section class="tools-container">
+<canvas id="grid-canvas"></canvas>
 
-    <div class="tool-card">
-        <h3>🖼 Image Compressor</h3>
-        <p>Compress images quickly and without losing high quality.</p>
-        <a href="imgc.html">Open Tool</a>
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">REI<span>OX</span></a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#services">الخدمات</a></li>
+    <li><a href="#why">لماذا نحن</a></li>
+    <li><a href="#process">طريقة عملنا</a></li>
+    <li><a href="#cta" class="nav-cta">ابدأ مشروعك</a></li>
+  </ul>
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      وكالة تصميم رقمي متكاملة
     </div>
-
-    <div class="tool-card">
-        <h3>Word To Pdf transfer</h3>
-        <p>convernt Word To PDF Online For Free.</p>
-        <a href="#">Open Tool</a>
+    <h1 class="hero-title">
+      <span class="line-1">نبني مواقع تُعيد</span>
+      <span class="line-2">تعريف المستقبل</span>
+    </h1>
+    <p class="hero-sub">
+      في REIOX نحوّل أفكارك إلى تجارب رقمية استثنائية — مواقع سريعة، تصاميم ذكية، وهوية بصرية تدوم.
+    </p>
+    <div class="hero-ctas">
+      <a href="#services" class="btn-primary">
+        استكشف خدماتنا
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+      <a href="#cta" class="btn-outline">
+        تحدث معنا
+      </a>
     </div>
-
-    <!-- يمكنك إضافة أدوات أخرى هنا مستقبلاً -->
-
+  </div>
+  <div class="scroll-indicator">
+    <span>اسحب للأسفل</span>
+    <div class="scroll-line"></div>
+  </div>
 </section>
 
+<!-- STATS -->
+<section id="stats">
+  <div class="stats-grid">
+    <div class="stat-item">
+      <div class="stat-number" data-target="120">0</div>
+      <div class="stat-label">مشروع مُنجَز</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-target="98">0</div>
+      <div class="stat-label">نسبة رضا العملاء %</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-target="5">0</div>
+      <div class="stat-label">سنوات من الخبرة</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-number" data-target="40">0</div>
+      <div class="stat-label">عميل نشط</div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="section-header">
+    <div class="section-tag">// الخدمات</div>
+    <h2 class="section-title">كل ما تحتاجه <em>في مكان واحد</em></h2>
+  </div>
+  <div class="services-grid">
+    <div class="service-card">
+      <div class="service-icon">🌐</div>
+      <h3>تصميم المواقع</h3>
+      <p>نصمم مواقع بصرية احترافية تجذب الزوار وتحوّلهم إلى عملاء، بتجربة مستخدم سلسة ومتجاوبة على جميع الأجهزة.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">⚡</div>
+      <h3>تطوير الويب</h3>
+      <p>نبني تطبيقات ومواقع بتقنيات حديثة تضمن الأداء العالي والأمان الكامل مع توافق تام مع محركات البحث.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🛒</div>
+      <h3>متاجر إلكترونية</h3>
+      <p>نطوّر منصات تجارة إلكترونية كاملة مع نظام دفع آمن، إدارة مخزون، وتجربة تسوق استثنائية.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🎨</div>
+      <h3>الهوية البصرية</h3>
+      <p>نبتكر هويات بصرية قوية تعكس جوهر علامتك التجارية وتجعلها لا تُنسى في ذاكرة عملائك.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">📱</div>
+      <h3>تطبيقات الجوال</h3>
+      <p>نصمم ونطور تطبيقات موبايل احترافية لنظامي iOS وAndroid تُقدّم تجربة مستخدم سلسة وممتعة.</p>
+    </div>
+    <div class="service-card">
+      <div class="service-icon">🚀</div>
+      <h3>SEO والتسويق</h3>
+      <p>نرفع ترتيب موقعك في نتائج البحث ونضع استراتيجيات تسويق رقمي مدروسة لزيادة المبيعات والوصول.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY US -->
+<section id="why">
+  <div class="why-inner">
+    <div class="why-visual">
+      <div class="why-rings">
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="ring"></div>
+        <div class="why-center">REIOX</div>
+      </div>
+    </div>
+    <div>
+      <div class="section-header" style="text-align:right; margin-bottom:3rem;">
+        <div class="section-tag">// لماذا نحن</div>
+        <h2 class="section-title">ما الذي يجعلنا <em>مختلفين؟</em></h2>
+      </div>
+      <div class="why-features">
+        <div class="why-feature">
+          <div class="feature-icon">🔬</div>
+          <div class="feature-text">
+            <h4>تصميم موجّه بالبيانات</h4>
+            <p>نتخذ كل قرار تصميمي بناءً على تحليل حقيقي لسلوك المستخدم واحتياجات السوق.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <h4>أداء استثنائي</h4>
+            <p>مواقعنا تحمل معدلات سرعة تحميل فوق المتوسط — لأن كل ثانية تعني خسارة أو ربح.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-text">
+            <h4>دعم مستمر على مدار الساعة</h4>
+            <p>علاقتنا بالعميل لا تنتهي بعد التسليم — نحن شريكك الدائم في النجاح الرقمي.</p>
+          </div>
+        </div>
+        <div class="why-feature">
+          <div class="feature-icon">🌍</div>
+          <div class="feature-text">
+            <h4>رؤية عالمية بجذور محلية</h4>
+            <p>نجمع بين أفضل معايير التصميم العالمي وفهم عميق للسوق والمستخدم العربي.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="section-header">
+    <div class="section-tag">// طريقة عملنا</div>
+    <h2 class="section-title">من الفكرة إلى <em>الإطلاق</em></h2>
+  </div>
+  <div class="process-steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <h4>الاستكشاف</h4>
+      <p>نفهم أهدافك، جمهورك المستهدف، ومتطلبات مشروعك بشكل كامل.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <h4>الاستراتيجية</h4>
+      <p>نضع خارطة طريق واضحة مع التصاميم الأولية ونماذج تفاعلية.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <h4>التطوير</h4>
+      <p>نبني بكود نظيف وتقنيات حديثة مع مراجعات دورية معك.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <h4>الإطلاق</h4>
+      <p>نُطلق مشروعك بثقة ونواصل الدعم لضمان نجاحه المستمر.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-content">
+    <h2 class="cta-title">جاهز لبناء <span>مستقبلك الرقمي؟</span></h2>
+    <p class="cta-sub">تحدث معنا اليوم وخذ الخطوة الأولى نحو حضور رقمي يُحدث فرقاً حقيقياً</p>
+    <a href="mailto:hello@reiox.com" class="btn-primary" style="font-size:1rem; padding:1.1rem 3rem; display:inline-flex;">
+      ابدأ مشروعك الآن
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
-    © 2026 Reiox.com - All Rights Reserved
+  <div class="footer-logo">REI<span>OX</span></div>
+  <ul class="footer-links">
+    <li><a href="#services">الخدمات</a></li>
+    <li><a href="#why">عنّا</a></li>
+    <li><a href="mailto:hello@reiox.com">اتصل بنا</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 <span>REIOX.COM</span> — جميع الحقوق محفوظة</div>
 </footer>
+
+<script>
+  // ── Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; });
+  const animRing = () => { rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12; ring.style.left = rx + 'px'; ring.style.top = ry + 'px'; requestAnimationFrame(animRing); };
+  animRing();
+  document.querySelectorAll('a, button, .service-card').forEach(el => {
+    el.addEventListener('mouseenter', () => { ring.style.width = '60px'; ring.style.height = '60px'; ring.style.borderColor = 'rgba(0,245,228,0.8)'; });
+    el.addEventListener('mouseleave', () => { ring.style.width = '36px'; ring.style.height = '36px'; ring.style.borderColor = 'rgba(0,245,228,0.5)'; });
+  });
+
+  // ── Canvas Grid
+  const canvas = document.getElementById('grid-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  const resize = () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; };
+  resize();
+  window.addEventListener('resize', resize);
+
+  const dots = [];
+  for (let i = 0; i < 80; i++) dots.push({ x: Math.random() * 1600, y: Math.random() * 900, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3 });
+
+  const drawGrid = () => {
+    ctx.clearRect(0, 0, W, H);
+    // Grid lines
+    ctx.strokeStyle = 'rgba(0,245,228,0.06)';
+    ctx.lineWidth = 1;
+    const sz = 80;
+    for (let x = 0; x < W; x += sz) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += sz) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    // Particles
+    dots.forEach(d => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0 || d.x > W) d.vx *= -1;
+      if (d.y < 0 || d.y > H) d.vy *= -1;
+      ctx.beginPath(); ctx.arc(d.x, d.y, 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,245,228,0.5)'; ctx.fill();
+    });
+    // Connections
+    for (let i = 0; i < dots.length; i++) for (let j = i+1; j < dots.length; j++) {
+      const dx = dots[i].x - dots[j].x, dy = dots[i].y - dots[j].y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 130) {
+        ctx.beginPath(); ctx.moveTo(dots[i].x, dots[i].y); ctx.lineTo(dots[j].x, dots[j].y);
+        ctx.strokeStyle = `rgba(0,102,255,${(1-dist/130)*0.25})`; ctx.lineWidth = 0.5; ctx.stroke();
+      }
+    }
+    requestAnimationFrame(drawGrid);
+  };
+  drawGrid();
+
+  // ── Hamburger
+  const ham = document.getElementById('hamburger');
+  const nav = document.getElementById('navLinks');
+  ham.addEventListener('click', () => nav.classList.toggle('open'));
+
+  // ── Scroll Reveal
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), e.target.dataset.delay || 0);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.service-card, .why-feature, .step, .stat-item').forEach((el, i) => {
+    el.dataset.delay = (i % 4) * 120;
+    observer.observe(el);
+  });
+
+  // ── Counter animation
+  const counterObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const el = entry.target;
+        const target = parseInt(el.dataset.target);
+        let current = 0;
+        const step = target / 60;
+        const update = () => {
+          current = Math.min(current + step, target);
+          el.textContent = Math.floor(current) + (el.parentElement.querySelector('.stat-label').textContent.includes('%') ? '+' : '+');
+          if (current < target) requestAnimationFrame(update);
+          else el.textContent = target + '+';
+        };
+        update();
+        counterObserver.unobserve(el);
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.stat-number').forEach(el => counterObserver.observe(el));
+</script>
 
 </body>
 </html>
